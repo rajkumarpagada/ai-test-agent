@@ -6,13 +6,13 @@ export default defineConfig({
   testDir: './tests',
   timeout: 60_000,
   retries: 1,
-  reporter: [['html', { open: 'never' }], ['list']],
+  reporter: [['html', { open: 'always' }], ['list']],
   use: {
-    headless: true,
+    headless: false,
     viewport: { width: 1280, height: 720 },
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    trace: 'retain-on-failure',
+    screenshot: 'on',
+    video: 'on',
+    trace: 'on',
   },
   projects: [
     {

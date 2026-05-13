@@ -44,8 +44,8 @@ class SauceDemoPage {
   }
 }
 
-const EMAIL = process.env.KAYO_EMAIL || 'standard_user';
-const PASSWORD = process.env.KAYO_PASSWORD || 'secret_sauce';
+const EMAIL = process.env.SAUCE_USERNAME || 'standard_user';;
+const PASSWORD = process.env.SAUCE_PASSWORD || 'secret_sauce';;
 
 test('TC001 - Successful Login with Valid Credentials', async ({ page }) => {
   const saucePage = new SauceDemoPage(page);
