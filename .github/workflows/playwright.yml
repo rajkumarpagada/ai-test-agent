@@ -20,17 +20,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Playwright tests
+      - name: Run AI Test Agent Watcher
         env:
-          KAYO_EMAIL: ${{ secrets.KAYO_EMAIL }}
-          KAYO_PASSWORD: ${{ secrets.KAYO_PASSWORD }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT: SCRUM
+          TEST_WEBSITE_URL: https://www.saucedemo.com
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
-        run: npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts
+        run: npx tsx src/watcher.ts
 
       - name: Upload test report
         if: always()
