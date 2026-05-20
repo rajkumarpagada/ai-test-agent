@@ -48,8 +48,8 @@ test('TC001 - Successful Login and Sort Products by Price Low to High', async ({
 
   await saucePage.navigate();
   await saucePage.login(
-    process.env.KAYO_EMAIL || 'standard_user',
-    process.env.KAYO_PASSWORD || 'secret_sauce'
+    process.env.SAUCE_USERNAME || 'standard_user',
+    process.env.SAUCE_PASSWORD || 'secret_sauce'
   );
 
   await expect(page).toHaveURL(/.*inventory.html/);
@@ -69,8 +69,8 @@ test('TC002 - Product Order Persists After Sorting', async ({ page }) => {
 
   await saucePage.navigate();
   await saucePage.login(
-    process.env.KAYO_EMAIL || 'standard_user',
-    process.env.KAYO_PASSWORD || 'secret_sauce'
+    process.env.SAUCE_USERNAME || 'standard_user',
+    process.env.SAUCE_PASSWORD || 'secret_sauce'
   );
 
   await expect(page).toHaveURL(/.*inventory.html/);
@@ -98,8 +98,8 @@ test('TC003 - Sort Applied Across Multiple Products', async ({ page }) => {
 
   await saucePage.navigate();
   await saucePage.login(
-    process.env.KAYO_EMAIL || 'standard_user',
-    process.env.KAYO_PASSWORD || 'secret_sauce'
+    process.env.SAUCE_USERNAME || 'standard_user',
+    process.env.SAUCE_PASSWORD || 'secret_sauce'
   );
 
   await expect(page).toHaveURL(/.*inventory.html/);

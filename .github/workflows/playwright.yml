@@ -1,12 +1,10 @@
 name: AI Test Agent — Playwright
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 9 * * *'  # runs every day at 9am UTC (7pm AEST)
+    - cron: '0 21 * * *'
 
 jobs:
   test:
@@ -20,17 +18,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run AI Test Agent Watcher
+      - name: Debug credentials
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_PROJECT: SCRUM
-          TEST_WEBSITE_URL: https://www.saucedemo.com
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
-        run: npx tsx src/watcher.ts
+        run: |
+          echo "SAUCE_USERNAME is set: ${{ secrets.SAUCE_USERNAME != '' }}"
+          echo "USERNAME value: $SAUCE_USERNAME"
+
+      - name: Run Playwright tests
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
+        run: npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts tests/SCRUM-8/SCRUM-8.spec.ts
 
       - name: Upload test report
         if: always()
