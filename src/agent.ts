@@ -66,8 +66,9 @@ Rules:
 1. Each test case becomes one test block
 2. Use resilient selectors (aria-label, role, data-testid preferred)
 3. Read credentials from environment variables only:
-   - process.env.KAYO_EMAIL
-   - process.env.KAYO_PASSWORD
+   - process.env.SAUCE_USERNAME
+   - process.env.SAUCE_PASSWORD
+   NEVER use KAYO_EMAIL or KAYO_PASSWORD
 4. Add meaningful assertions for each Then statement
 5. Handle async navigation with waitForURL or waitForSelector
 6. Use ONE simple Page Object class only
