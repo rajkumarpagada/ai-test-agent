@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 1,
   reporter: [['html', { open: 'always' }], ['list']],
   use: {
-    headless: false,
+    headless: true,
     viewport: { width: 1280, height: 720 },
     screenshot: 'on',
     video: 'on',
