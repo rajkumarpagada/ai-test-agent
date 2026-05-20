@@ -2,9 +2,9 @@ name: AI Test Agent — Playwright
 
 on:
   pull_request:
-    branches: [main]        # runs when PR is raised against main
+    branches: [main]
   schedule:
-    - cron: '0 21 * * *'   # nightly at 9am AEST (21:00 UTC)
+    - cron: '0 21 * * *'
 
 jobs:
   test:
@@ -18,18 +18,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run AI Test Agent Watcher
-        if: github.event_name == 'schedule'
+      - name: Debug credentials
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_PROJECT: SCRUM
-          TEST_WEBSITE_URL: https://www.saucedemo.com
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
-        run: npx tsx src/watcher.ts
+        run: |
+          echo "SAUCE_USERNAME is set: ${{ secrets.SAUCE_USERNAME != '' }}"
+          echo "USERNAME value: $SAUCE_USERNAME"
 
       - name: Run Playwright tests
         env:
