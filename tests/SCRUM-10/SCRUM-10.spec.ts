@@ -13,6 +13,10 @@ class SauceDemoPage {
     await this.page.click('[data-test="login-button"]');
   }
 
+  async waitForInventory() {
+    await this.page.waitForURL('**/inventory.html');
+  }
+
   async addProductToCartByIndex(index: number) {
     const addButtons = this.page.locator('[data-test^="add-to-cart"]');
     await addButtons.nth(index).click();
@@ -24,6 +28,7 @@ class SauceDemoPage {
 
   async openCart() {
     await this.page.click('.shopping_cart_link');
+    await this.page.waitForURL('**/cart.html');
   }
 
   async removeFirstCartItem() {
@@ -37,6 +42,7 @@ class SauceDemoPage {
 
   async proceedToCheckout() {
     await this.page.click('[data-test="checkout"]');
+    await this.page.waitForURL('**/checkout-step-one.html');
   }
 
   async fillCheckoutInfo(firstName: string, lastName: string, zip: string) {
@@ -44,69 +50,76 @@ class SauceDemoPage {
     await this.page.fill('[data-test="lastName"]', lastName);
     await this.page.fill('[data-test="postalCode"]', zip);
     await this.page.click('[data-test="continue"]');
+    await this.page.waitForURL('**/checkout-step-two.html');
   }
 
   async finishCheckout() {
     await this.page.click('[data-test="finish"]');
+    await this.page.waitForURL('**/checkout-complete.html');
   }
 }
 
-test('TC001 - Successful Login and Navigation to Inventory Page', async ({ page }) => {
-  const saucePage = new SauceDemoPage(page);
-  const email = process.env.KAYO_EMAIL || 'standard_user';
-  const password = process.env.KAYO_PASSWORD || 'secret_sauce';
+test.describe('SauceDemo Tests', () => {
+  let saucePage: SauceDemoPage;
 
-  await saucePage.goto();
-  await saucePage.login(email, password);
+  test.beforeEach(async ({ page }) => {
+    saucePage = new SauceDemoPage(page);
+  });
 
-  await page.waitForURL('**/inventory.html');
-  await expect(page).toHaveURL(/inventory\.html/);
-  await expect(page.locator('.inventory_list')).toBeVisible();
-});
+  test('TC001 - Successful Login and Navigation to Inventory Page', async ({ page }) => {
+    const username = process.env.SAUCE_USERNAME || '';
+    const password = process.env.SAUCE_PASSWORD || '';
 
-test('TC002 - Add Two Products to Cart', async ({ page }) => {
-  const saucePage = new SauceDemoPage(page);
-  const email = process.env.KAYO_EMAIL || 'standard_user';
-  const password = process.env.KAYO_PASSWORD || 'secret_sauce';
+    await saucePage.goto();
+    await saucePage.login(username, password);
+    await saucePage.waitForInventory();
 
-  await saucePage.goto();
-  await saucePage.login(email, password);
-  await page.waitForURL('**/inventory.html');
+    await expect(page).toHaveURL(/.*inventory\.html/);
+    await expect(page.locator('.inventory_list')).toBeVisible();
+  });
 
-  await saucePage.addProductToCartByIndex(0);
-  await saucePage.addProductToCartByIndex(1);
+  test('TC002 - Add Two Products to Cart', async ({ page }) => {
+    const username = process.env.SAUCE_USERNAME || '';
+    const password = process.env.SAUCE_PASSWORD || '';
 
-  const badgeCount = await saucePage.getCartBadgeCount();
-  expect(badgeCount).toBe('2');
-});
+    await saucePage.goto();
+    await saucePage.login(username, password);
+    await saucePage.waitForInventory();
 
-test('TC003 - Remove Item, Proceed to Checkout and Confirm Order', async ({ page }) => {
-  const saucePage = new SauceDemoPage(page);
-  const email = process.env.KAYO_EMAIL || 'standard_user';
-  const password = process.env.KAYO_PASSWORD || 'secret_sauce';
+    await saucePage.addProductToCartByIndex(0);
+    await saucePage.addProductToCartByIndex(1);
 
-  await saucePage.goto();
-  await saucePage.login(email, password);
-  await page.waitForURL('**/inventory.html');
+    const badgeCount = await saucePage.getCartBadgeCount();
+    expect(badgeCount).toBe('2');
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('2');
+  });
 
-  await saucePage.addProductToCartByIndex(0);
-  await saucePage.addProductToCartByIndex(1);
-  await saucePage.openCart();
-  await page.waitForURL('**/cart.html');
+  test('TC003 - Remove Item, Proceed to Checkout and Confirm Order', async ({ page }) => {
+    const username = process.env.SAUCE_USERNAME || '';
+    const password = process.env.SAUCE_PASSWORD || '';
 
-  await saucePage.removeFirstCartItem();
-  const remainingItems = await saucePage.getCartItemCount();
-  expect(remainingItems).toBe(1);
+    await saucePage.goto();
+    await saucePage.login(username, password);
+    await saucePage.waitForInventory();
 
-  await saucePage.proceedToCheckout();
-  await page.waitForURL('**/checkout-step-one.html');
+    await saucePage.addProductToCartByIndex(0);
+    await saucePage.addProductToCartByIndex(1);
+    await saucePage.openCart();
 
-  await saucePage.fillCheckoutInfo('John', 'Doe', '12345');
-  await page.waitForURL('**/checkout-step-two.html');
+    await expect(page.locator('.cart_item')).toHaveCount(2);
 
-  await saucePage.finishCheckout();
-  await page.waitForURL('**/checkout-complete.html');
+    await saucePage.removeFirstCartItem();
 
-  await expect(page.locator('.complete-header')).toBeVisible();
-  await expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');
+    const remainingItems = await saucePage.getCartItemCount();
+    expect(remainingItems).toBe(1);
+    await expect(page.locator('.cart_item')).toHaveCount(1);
+
+    await saucePage.proceedToCheckout();
+    await saucePage.fillCheckoutInfo('Test', 'User', '12345');
+    await saucePage.finishCheckout();
+
+    await expect(page).toHaveURL(/.*checkout-complete\.html/);
+    await expect(page.locator('.complete-header')).toBeVisible();
+    await expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');
+  });
 });

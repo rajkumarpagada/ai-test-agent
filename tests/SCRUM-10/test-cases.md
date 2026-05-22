@@ -2,8 +2,8 @@
 
 TC001 - Successful Login and Navigation to Inventory Page
   Type: Positive
-  Given: User is on the login page with valid credentials available
-  When: User enters valid username and password and clicks Login
+  Given: User is on the login page
+  When: User enters valid username and password and submits the form
   Then: Login succeeds and the inventory page is displayed
 
 TC002 - Add Two Products to Cart
@@ -15,5 +15,5 @@ TC002 - Add Two Products to Cart
 TC003 - Remove Item, Proceed to Checkout and Confirm Order
   Type: Positive
   Given: User has 2 items in the cart and has opened the cart page
-  When: User removes the first product, then proceeds to checkout and completes the order
-  Then: The cart shows 1 remaining item during removal and the order confirmation page is displayed after checkout
+  When: User removes the first product, proceeds to checkout, and completes the order
+  Then: The cart shows 1 remaining item during removal and an order confirmation is displayed after checkout
