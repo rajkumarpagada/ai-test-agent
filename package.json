@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:unit": "jest --config jest.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,5 +19,11 @@
     "dotenv": "^17.4.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.2"
   }
 }

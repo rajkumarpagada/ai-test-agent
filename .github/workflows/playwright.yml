@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run unit tests
+        run: npx jest --config jest.config.js
+
       - name: Run AI Test Agent Watcher
         if: github.event_name == 'schedule'
         env:
@@ -39,7 +42,7 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
-        run: npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts tests/SCRUM-8/SCRUM-8.spec.ts
+        run: npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts tests/SCRUM-8/SCRUM-8.spec.ts tests/SCRUM-10/SCRUM-10.spec.ts
 
       - name: Upload test report
         if: always()
