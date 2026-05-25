@@ -7,6 +7,7 @@ An autonomous QA agent that watches Jira for new story tickets, generates Playwr
 ## Architecture
 
 ![AI Test Automation Framework](docs/architecture.svg)
+
 ---
 
 ## Project structure
