@@ -38,11 +38,11 @@ jobs:
           REPO_GITHUB: ${{ secrets.REPO_GITHUB }}
         run: npx tsx src/watcher.ts
 
-      - name: Run Playwright tests
+      - name: Run all Playwright tests
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
-        run: npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts tests/SCRUM-8/SCRUM-8.spec.ts tests/SCRUM-10/SCRUM-10.spec.ts
+        run: npx playwright test tests/
 
       - name: Upload test report
         if: always()
