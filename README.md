@@ -30,6 +30,7 @@ SCRUM-7/
 SCRUM-7.test.ts  – 20 unit tests for SauceDemoPage class
 .github/workflows/
 playwright.yml – CI/CD pipeline
+```
 
 ---
 
@@ -43,6 +44,7 @@ npx jest --config jest.config.js
 Test Suites: 1 passed
 Tests:       20 passed
 Time:        0.209s
+```
 
 Unit tests cover:
 - `goto()` — navigates to correct URL
@@ -64,7 +66,7 @@ Unit tests cover:
 
 If unit tests fail — pipeline stops. E2E tests don't run.
 
----
+```
 
 ## Branch strategy
 main (protected)
@@ -76,7 +78,7 @@ No direct push to main
 PR required before merge
 CI/CD must pass before merge
 
----
+```
 
 ## Prerequisites
 
