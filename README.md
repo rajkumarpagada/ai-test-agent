@@ -1,56 +1,133 @@
-# AI Test Agent
+# AI Test Automation Framework
 
-An autonomous QA agent that watches Jira for new story tickets, generates Playwright test cases using Claude AI, runs them, posts results back to Jira, and opens a GitHub PR — all without human intervention.
+An autonomous QA agent that watches Jira for new story tickets, generates Playwright test cases using Claude AI, runs unit tests and E2E tests in CI/CD, and opens a GitHub PR — all without human intervention.
 
-## How it works
+---
 
-```
-Jira "To Do" story
-        │
-        ▼
-  Fetch acceptance criteria
-        │
-        ▼
-  Claude AI → test cases (TC001, TC002, …)
-        │
-        ▼
-  Claude AI → Playwright TypeScript spec
-        │
-        ▼
-  Run tests with Playwright
-        │
-        ▼
-  Post results as Jira comment
-  Label ticket "automated"
-  Push branch + open GitHub PR
-```
+## Architecture
+
+┌─────────────────────────────────────────────────────┐
+│                     TRIGGERS                        │
+│  Jira "To Do" story   Nightly 9pm AEST   PR raised  │
+└──────────┬───────────────────┬───────────────┬──────┘
+│                   │               │
+▼                   ▼               │
+┌──────────────────────────────────┐           │
+│     Watcher (src/watcher.ts)     │           │
+│  Finds unlabelled To Do stories  │           │
+└────────────────┬─────────────────┘           │
+▼                             │
+┌──────────────────────────────────┐           │
+│         Jira REST API            │           │
+│  Reads acceptance criteria       │           │
+└────────────────┬─────────────────┘           │
+▼                             │
+┌──────────────────────────────────┐           │
+│           Claude AI              │           │
+│  Step 1: AC → test cases         │           │
+│  Step 2: test cases → spec.ts    │           │
+└────────────────┬─────────────────┘           │
+▼                             │
+┌──────────────────────────────────┐           │
+│     Playwright local test run    │           │
+│  Headless Chrome — local verify  │           │
+└────────┬───────────────┬─────────┘           │
+▼               ▼                     │
+┌──────────────┐  ┌──────────────────┐         │
+│ Jira updated │  │ Auto branch + PR │         │
+│ Label added  │  │ feature/SCRUM-N  │         │
+│ Results post │  └────────┬─────────┘         │
+└──────────────┘           │◄──────────────────┘
+▼
+┌─────────────────────────────────────────────────────┐
+│           CI/CD Pipeline (GitHub Actions)           │
+│                                                     │
+│  1. Unit tests (Jest) — 20 tests, milliseconds      │
+│          ↓ only if unit tests pass                  │
+│  2. E2E tests (Playwright) — all tests/ dynamically │
+│          ↓                                          │
+│  3. HTML report + video uploaded as artifact        │
+└────────────────────┬────────────────────────────────┘
+▼
+┌──────────────────────────────────┐
+│     You review and merge PR      │
+│   Main branch always healthy ✓   │
+└──────────────────────────────────┘
 
 ## Project structure
-
-```
 src/
-  agent.ts      – AI pipeline: acceptance criteria → test cases → Playwright code
-  watcher.ts    – Orchestrator: polls Jira, runs agent, commits, raises PR
-  jira.ts       – Jira REST API client (fetch issues, post comments, add labels)
-  merge.ts      – Merges AI-generated and Playwright-recorded specs via Claude
-  codegen.ts    – Wrapper around `playwright codegen` for recording sessions
-  index.ts      – CLI entry point for one-shot runs
-
+agent.ts      – AI pipeline: AC → test cases → Playwright code
+watcher.ts    – Orchestrator: polls Jira, runs agent, commits, raises PR
+jira.ts       – Jira REST API client
+index.ts      – CLI entry point for one-shot runs
+codegen.ts    – Wrapper around playwright codegen
+merge.ts      – Merges AI-generated and recorded specs via Claude
 tests/
-  SCRUM-10/     – Auto-generated spec + test-cases.md per Jira ticket
-  SCRUM-7/
-  …
-
+SCRUM-7/      – Auto-generated spec + test-cases.md
+SCRUM-8/
+SCRUM-10/
+…             – Each new Jira ticket gets its own folder
+unit-tests/
+SCRUM-7/
+SCRUM-7.test.ts  – 20 unit tests for SauceDemoPage class
 .github/workflows/
-  playwright.yml – CI: runs watcher on schedule (21:00 UTC daily) and Playwright tests on PRs
+playwright.yml – CI/CD pipeline
+
+---
+
+## Unit tests
+
+Unit tests validate each page object method in isolation — no browser, no network, runs in milliseconds.
+
+```bash
+npx jest --config jest.config.js
 ```
+Test Suites: 1 passed
+Tests:       20 passed
+Time:        0.209s
+
+Unit tests cover:
+- `goto()` — navigates to correct URL
+- `login()` — fills username, password, clicks button in correct order
+- `goToCart()` — clicks cart link, waits for URL
+- `proceedToCheckout()` — clicks checkout, waits for URL
+- `fillShippingDetails()` — fills all three fields, clicks continue
+- `submitOrder()` — waits for step two, clicks finish, waits for complete
+- Credential defaults — fallback values are correct
+
+---
+
+## CI/CD pipeline
+
+| Trigger | What runs |
+|---|---|
+| Pull request to main | Unit tests → E2E tests → report |
+| Schedule (21:00 UTC daily) | Watcher → unit tests → E2E tests → report |
+
+If unit tests fail — pipeline stops. E2E tests don't run.
+
+---
+
+## Branch strategy
+main (protected)
+← feature/SCRUM-N  (auto-created by watcher)
+← feature/your-feature  (manual changes)
+Rules:
+
+No direct push to main
+PR required before merge
+CI/CD must pass before merge
+
+---
 
 ## Prerequisites
 
 - Node.js 18+
-- A Jira project with stories that have acceptance criteria in the description
-- An Anthropic API key
-- A GitHub personal access token (repo scope)
+- Jira project with stories containing acceptance criteria
+- Anthropic API key
+- GitHub personal access token (repo + workflow scope)
+
+---
 
 ## Setup
 
@@ -59,7 +136,7 @@ npm install
 npx playwright install chromium
 ```
 
-Copy `.env.example` to `.env` (or set the variables below directly):
+Create `.env`:
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
@@ -74,62 +151,46 @@ TOKEN_CUSTOM_GITHUB=ghp_...
 REPO_GITHUB=owner/repo
 ```
 
+---
+
 ## Usage
 
-### Run the watcher (processes all unautomated tickets)
-
+### Run the watcher manually
 ```bash
 npx tsx src/watcher.ts
 ```
 
-The watcher will:
-1. Find all Jira stories in "To Do" without the `automated` label
-2. For each ticket, generate test cases and a Playwright spec via Claude
-3. Run the generated tests
-4. Post a pass/fail comment on the Jira ticket and add the `automated` label
-5. Create a feature branch, commit the spec, and open a PR against `main`
-
-### One-shot run for a single ticket
-
+### Run for a single Jira ticket
 ```bash
 npx tsx src/index.ts SCRUM-42 https://www.saucedemo.com
 ```
 
-### Record a test manually (Playwright Codegen)
-
+### Run unit tests
 ```bash
-npx tsx src/codegen.ts https://www.saucedemo.com tests/recorded.spec.ts
+npx jest --config jest.config.js
 ```
 
-### Merge AI-generated and recorded specs
-
+### Run all E2E tests
 ```bash
-npx tsx -e "import { mergeTests } from './src/merge'; mergeTests('tests/SCRUM-10/SCRUM-10.spec.ts', 'tests/recorded.spec.ts', 'tests/SCRUM-10/SCRUM-10.merged.spec.ts')"
+npx playwright test tests/
 ```
 
-### Run tests manually
-
+### Run a specific spec
 ```bash
-npx playwright test tests/SCRUM-10/SCRUM-10.spec.ts
+npx playwright test tests/SCRUM-7/SCRUM-7.spec.ts --headed
 ```
 
-## CI / CD
-
-The GitHub Actions workflow (`.github/workflows/playwright.yml`) does two things:
-
-| Trigger | What runs |
-|---|---|
-| `schedule` (21:00 UTC daily) | Full watcher — generates tests for any new Jira tickets |
-| `pull_request` to `main` | Playwright tests for existing spec files |
-
-All secrets are stored in GitHub repository secrets and injected at runtime.
+---
 
 ## Tech stack
 
 | Tool | Role |
 |---|---|
-| Claude (`claude-sonnet-4-6`) | Test case generation, Playwright code generation, spec merging |
-| Playwright | Test execution, browser automation, codegen |
-| Jira REST API v3 | Fetch acceptance criteria, post comments, label tickets |
-| GitHub API | Create branches, open pull requests |
-| TypeScript + tsx | Runtime and type safety |
+| Claude (claude-sonnet-4-6) | Test case generation + Playwright code generation |
+| Playwright | Browser automation + E2E test execution |
+| Jest | Unit testing — fast, no browser needed |
+| Jira REST API v3 | Read AC, post results, label tickets |
+| GitHub API | Create branches, open PRs automatically |
+| GitHub Actions | CI/CD — unit tests + E2E on every PR |
+| TypeScript + tsx | Language + runtime |
+
