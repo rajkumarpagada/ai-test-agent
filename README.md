@@ -36,8 +36,6 @@ An autonomous QA agent that watches Jira for new story tickets, generates Playwr
 
 Unit tests validate each page object method in isolation - no browser, no network, runs in milliseconds.
 
-Run unit tests:
-
     npx jest --config jest.config.js
 
 Output:
