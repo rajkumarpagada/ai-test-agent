@@ -6,53 +6,8 @@ An autonomous QA agent that watches Jira for new story tickets, generates Playwr
 
 ## Architecture
 
-┌─────────────────────────────────────────────────────┐
-│                     TRIGGERS                        │
-│  Jira "To Do" story   Nightly 9pm AEST   PR raised  │
-└──────────┬───────────────────┬───────────────┬──────┘
-│                   │               │
-▼                   ▼               │
-┌──────────────────────────────────┐           │
-│     Watcher (src/watcher.ts)     │           │
-│  Finds unlabelled To Do stories  │           │
-└────────────────┬─────────────────┘           │
-▼                             │
-┌──────────────────────────────────┐           │
-│         Jira REST API            │           │
-│  Reads acceptance criteria       │           │
-└────────────────┬─────────────────┘           │
-▼                             │
-┌──────────────────────────────────┐           │
-│           Claude AI              │           │
-│  Step 1: AC → test cases         │           │
-│  Step 2: test cases → spec.ts    │           │
-└────────────────┬─────────────────┘           │
-▼                             │
-┌──────────────────────────────────┐           │
-│     Playwright local test run    │           │
-│  Headless Chrome — local verify  │           │
-└────────┬───────────────┬─────────┘           │
-▼               ▼                     │
-┌──────────────┐  ┌──────────────────┐         │
-│ Jira updated │  │ Auto branch + PR │         │
-│ Label added  │  │ feature/SCRUM-N  │         │
-│ Results post │  └────────┬─────────┘         │
-└──────────────┘           │◄──────────────────┘
-▼
-┌─────────────────────────────────────────────────────┐
-│           CI/CD Pipeline (GitHub Actions)           │
-│                                                     │
-│  1. Unit tests (Jest) — 20 tests, milliseconds      │
-│          ↓ only if unit tests pass                  │
-│  2. E2E tests (Playwright) — all tests/ dynamically │
-│          ↓                                          │
-│  3. HTML report + video uploaded as artifact        │
-└────────────────────┬────────────────────────────────┘
-▼
-┌──────────────────────────────────┐
-│     You review and merge PR      │
-│   Main branch always healthy ✓   │
-└──────────────────────────────────┘
+![AI Test Automation Framework](docs/architecture.svg)
+---
 
 ## Project structure
 src/
